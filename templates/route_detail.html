@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<title>{{ route['name'] }}</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  .route-img { width: 100%; max-width: 600px; border-radius: 8px; }
+  .back-link { margin-bottom: 20px; display: inline-block; text-decoration:none; color:#67a84f; }
+  .back-link:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<a href="{{ url_for('index') }}" class="back-link">← 返回列表</a>
+
+<h1>{{ route['name'] }}</h1>
+<img src="{{ route['img_url'] }}" alt="路線圖片" class="route-img" />
+<p><strong>區域：</strong>{{ route['region'] }}</p>
+<p><strong>難度：</strong>{{ route['difficulty'] }}</p>
+<p><strong>時間：</strong>{{ route['time'] }}</p>
+<p><strong>類型：</strong>{{ route['type'] }}</p>
+
+</body>
+</html>

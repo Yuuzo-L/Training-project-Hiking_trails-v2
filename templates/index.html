@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<title>路線搜尋</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+  .filter-group { margin-bottom: 12px; }
+  .filter-label { width: 70px; display: inline-block; font-weight: bold; }
+  .filter-options button {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 6px 12px;
+    border: none;
+    background-color: #ddd;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .filter-options button.selected {
+    background-color: #67a84f;
+    color: white;
+  }
+  input[type=text] {
+    padding: 6px;
+    width: 250px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  button[type=submit] {
+    padding: 6px 14px;
+    background-color: #67a84f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .route-list {
+    margin-top: 30px;
+  }
+  .route-item {
+    background: white;
+    padding: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
+  }
+  .route-item img {
+    width: 150px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-right: 16px;
+  }
+  .route-info {
+    flex-grow: 1;
+  }
+  .route-name {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 4px;
+  }
+  .route-name a {
+    color: #222;
+    text-decoration: none;
+  }
+  .route-name a:hover {
+    text-decoration: underline;
+  }
+  .route-region {
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .route-time {
+    background: #eee;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    color: #555;
+    display: inline-block;
+  }
+  .pagination {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .pagination button {
+    margin: 0 3px;
+    padding: 6px 12px;
+    border: none;
+    background-color: #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .pagination button.current {
+    background-color: #67a84f;
+    color: white;
+    cursor: default;
+  }
+  .route-tags {
+  margin-top: 6px;
+  }
+  .route-tags .tag {
+  background: #eee;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  color: #555;
+  display: inline-block;
+  margin-right: 8px;
+  margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>路線搜尋</h1>
+
+<form method="POST" id="filterForm">
+  <div class="filter-group">
+    <span class="filter-label">區域</span>
+    <span class="filter-options">
+      {% for option in regions %}
+      <button type="button" data-filter="region" class="{{ 'selected' if option == selected_region else '' }}">{{ option }}</button>
+      {% endfor %}
+    </span>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">難度</span>
+    <span class="filter-options">
+      {% for d in difficulties %}
+      <button type="button" data-filter="difficulty" class="{{ 'selected' if d == selected_difficulty else '' }}">{{ d }}</button>
+      {% endfor %}
+    </span>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">時間</span>
+    <span class="filter-options">
+      {% for option in times %}
+      <button type="button" data-filter="time" class="{{ 'selected' if option == selected_time else '' }}">{{ option }}</button>
+      {% endfor %}
+    </span>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">類型</span>
+    <span class="filter-options">
+      {% for option in types %}
+      <button type="button" data-filter="type" class="{{ 'selected' if option == selected_type else '' }}">{{ option }}</button>
+      {% endfor %}
+    </span>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">搜尋</span>
+    <input type="text" name="keyword" placeholder="路線名稱 / 相關山岳" value="{{ keyword }}" />
+    <button type="submit">搜尋</button>
+  </div>
+
+  <!-- 隱藏輸入欄位，放置目前選擇 -->
+  <input type="hidden" name="region" id="regionInput" value="{{ selected_region }}" />
+  <input type="hidden" name="difficulty" id="difficultyInput" value="{{ selected_difficulty }}" />
+  <input type="hidden" name="time" id="timeInput" value="{{ selected_time }}" />
+  <input type="hidden" name="type" id="typeInput" value="{{ selected_type }}" />
+  <input type="hidden" name="page" id="pageInput" value="{{ page }}" />
+</form>
+
+<hr />
+
+<div class="route-list">
+  <h2>路線列表，{{ total }} 筆路線資料 (第 {{ page }} 頁，共 {{ total_pages }} 頁)</h2>
+  {% if results %}
+  {% for item in results %}
+  <div class="route-item">
+    <img src="{{ item.img_url or 'https://via.placeholder.com/300x200?text=No+Image' }}" alt="圖片" />
+    <div class="route-info">
+      <div class="route-name"><a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.name }}</a></div>
+      <div class="route-region">{{ item.region }}</div>
+      <div class="route-tags">
+        <span class="tag"> {{ item.difficulty }}</span>
+        <span class="tag">所需時間 {{ item.time }}</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p>找不到符合的路線</p>
+  {% endif %}
+</div>
+
+<div class="pagination">
+  {% if page > 1 %}
+  <button type="button" id="prevPageBtn">上一頁</button>
+  {% endif %}
+
+  {% for p in range(1, total_pages + 1) %}
+    {% if p == page %}
+      <button class="current" disabled>{{ p }}</button>
+    {% elif p >= page - 2 and p <= page + 2 %}
+      <button type="button" class="pageBtn">{{ p }}</button>
+    {% elif p == 1 or p == total_pages %}
+      <button type="button" class="pageBtn">{{ p }}</button>
+    {% elif p == page - 3 or p == page + 3 %}
+      ...
+    {% endif %}
+  {% endfor %}
+
+  {% if page < total_pages %}
+  <button type="button" id="nextPageBtn">下一頁</button>
+  {% endif %}
+</div>
+
+<script>
+  // 按鈕點擊，切換選擇並更新隱藏 input，提交表單，分頁重設為1
+  document.querySelectorAll(".filter-options button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const filter = btn.getAttribute("data-filter");
+      // 移除該 filter 下的所有 selected
+      document.querySelectorAll(`button[data-filter="${filter}"]`).forEach(b => b.classList.remove("selected"));
+      // 設定點擊的 btn 為 selected
+      btn.classList.add("selected");
+
+      // 更新隱藏 input 值
+      const inputId = filter + "Input";
+      document.getElementById(inputId).value = btn.textContent;
+
+      // 分頁回到1
+      document.getElementById("pageInput").value = 1;
+
+      // 立即提交表單
+      document.getElementById("filterForm").submit();
+    });
+  });
+
+  // 分頁按鈕
+  function gotoPage(p) {
+    document.getElementById("pageInput").value = p;
+    document.getElementById("filterForm").submit();
+  }
+
+  document.querySelectorAll(".pageBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      gotoPage(btn.textContent);
+    });
+  });
+
+  const prevBtn = document.getElementById("prevPageBtn");
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      const currentPage = parseInt(document.getElementById("pageInput").value);
+      if (currentPage > 1) gotoPage(currentPage - 1);
+    });
+  }
+
+  const nextBtn = document.getElementById("nextPageBtn");
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      const currentPage = parseInt(document.getElementById("pageInput").value);
+      if (currentPage < {{ total_pages }}) gotoPage(currentPage + 1);
+    });
+  }
+</script>
+
+</body>
+</html>

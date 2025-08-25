@@ -2,11 +2,11 @@
 import sqlite3
 import csv
 
-conn = sqlite3.connect('Top100.db')
+conn = sqlite3.connect('foothills.db')
 cursor = conn.cursor()
 
 
-with open('Top100_list.csv','r',encoding='UTF-8-SIG') as trails:
+with open('foothills_list.csv','r',encoding='UTF-8-SIG') as trails:
     x = next(trails)
 # print(x)
     count = 0  # 新增計數器

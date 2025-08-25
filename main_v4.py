@@ -42,7 +42,7 @@ def fetch_data(page):
 
 seen_names = set()  # 記錄已經出現過的步道名稱
 
-for page in range(1,20):
+for page in range(1,97):
     temp_data = fetch_data(page) # 抓一頁資料（是個 list）
     current_page_data = [] # 過濾完"暫存"的每頁資料
     for row in temp_data:

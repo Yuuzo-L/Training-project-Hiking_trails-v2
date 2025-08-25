@@ -4,7 +4,7 @@ import math
 
 app = Flask(__name__)
 DB_PATH = 'Trails.db'
-PAGE_SIZE = 10
+PAGE_SIZE = 20
 
 def get_difficulties_from_db():
     # 從資料庫取得所有實際存在的 difficulty 值
